@@ -1,16 +1,19 @@
 package org.com.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  * This is the configuration file
  */
 public class ConfigurationManager {
-    private static final Logger LOGGER = Logger.getLogger(ConfigurationManager.class.getName());
+    private static final Logger logger = LogManager.getLogger(ConfigurationManager.class);
+
     private static final ConfigurationManager CONFIGURATION_MANAGER = new ConfigurationManager();
     private final Properties properties;
 
@@ -21,13 +24,14 @@ public class ConfigurationManager {
                 .getResourceAsStream("application.properties")
         ){
             if(input == null){
-                LOGGER.severe("application.properties not found");
+                logger.fatal("application.properties not found");
                 throw new IOException("application.properties not found");
             }
             properties.load(input);
+            logger.info("application.properties loaded successfully");
         }
         catch(IOException exception){
-            LOGGER.log(Level.SEVERE,"Failed to load application.properties", exception);
+            logger.fatal("Failed to load application.properties", exception);
             throw new RuntimeException("Configuration loading failed",exception);
         }
     }
