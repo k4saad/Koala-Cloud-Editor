@@ -1,18 +1,71 @@
-import React from "react";
+import React, { useState } from "react";
 import koalaImage from "../assets/images/cool-koala.png";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 function Home() {
   // TODO -- Make a request to backend for it to start. (like a ping)
-  // TODO -- Implement the hamburger menue 
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const toggleNav = () => {
+    setIsOpen(!isOpen);
+  };
+  
   return (
     <>
-      <section className="relative overflow-x-hidden bg-[#060707]">
-        <nav className="z-20 relative  flex justify-between items-center px-5 py-5 w-full ">
-          <button className="lg:hidden">
-            <svg
-              width="60px"
-              height="60px"
+      <aside
+        className={`fixed lg:hidden z-40 flex h-screen w-52 flex-col overflow-y-auto border-r bg-[#032B22] px-5 py-8 font-Heavitas text-[#EFEDE7] transform transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <div className="mt-6 flex flex-1 flex-col justify-between">
+          <nav className="-mx-3 space-y-6 ">
+            <div className="space-y-3 ">
+              <label className="px-3 text-sm  uppercase ">
+                Authentication
+              </label>
+              <Link
+                to="/signin"
+                className={`flex transform items-center rounded-lg px-3 py-2 transition-colors duration-300 focus:bg-[#EFEDE7] focus:text-[#032B22]`
+                }
+              >
+                <span className="mx-2 text-xs ">
+                  Sign In
+                </span>
+              </Link>
+              <Link
+                to="/signup"
+                className={`flex transform items-center rounded-lg px-3 py-2 transition-colors duration-300 focus:bg-[#EFEDE7] focus:text-[#032B22]`
+                }
+              >
+                <span className="mx-2 text-xs ">
+                  Sign Up
+                </span>
+              </Link>
+            </div>
+          </nav>
+        </div>
+      </aside>
+      <section className="top-0 relative overflow-x-hidden bg-[#060707]">
+        <nav className="z-40 relative  flex justify-between items-center px-5 py-5 w-full ">
+          <button className={`${isOpen ? 'fixed ' : ' ' } lg:hidden  space-y-1`} onClick={toggleNav}>
+            <span
+              className={`block h-1 w-6 bg-[#EFEDE7] rounded-sm duration-300 ${
+                isOpen ? "rotate-45 translate-y-2 " : ""
+              }`}
+            ></span>
+            <span
+              className={`block h-1 w-6 bg-[#EFEDE7] rounded-sm duration-150 ${
+                isOpen ? "opacity-0 " : ""
+              }`}
+            ></span>
+            <span
+              className={`block h-1 w-6 bg-[#EFEDE7] rounded-sm duration-300 ${
+                isOpen ? "-rotate-45 -translate-y-2 " : ""
+              }`}
+            ></span>
+            {/* <svg
+              width="40px"
+              height="40px"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -20,12 +73,16 @@ function Home() {
               <path
                 d="M4 6H20M4 12H20M4 18H20"
                 stroke="#EFEDE7"
-                stroke-width="2"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-            </svg>
+            </svg> */}
           </button>
+
+          {/* this div is made so that koala stay in place when side bar is opened  */}
+          <div className={`${isOpen ? ' ' : 'hidden'} `}></div>
+          
           <div className="text-4xl text-[#EFEDE7] font-Heavitas">Koala</div>
           <div className="hidden lg:flex text-[#EFEDE7] font-Heavitas">
             <Link
