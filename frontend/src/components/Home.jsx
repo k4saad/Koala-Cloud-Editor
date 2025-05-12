@@ -63,21 +63,6 @@ function Home() {
                 isOpen ? "-rotate-45 -translate-y-2 " : ""
               }`}
             ></span>
-            {/* <svg
-              width="40px"
-              height="40px"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4 6H20M4 12H20M4 18H20"
-                stroke="#EFEDE7"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg> */}
           </button>
 
           {/* this div is made so that koala stay in place when side bar is opened  */}
@@ -86,13 +71,13 @@ function Home() {
           <div className="text-4xl text-[#EFEDE7] font-Heavitas">Koala</div>
           <div className="hidden lg:flex text-[#EFEDE7] font-Heavitas">
             <Link
-              href="/login"
+              to="/signin"
               className=" hover:ring-2 hover:ring-[#02C173] focus:bg-[#02C173] rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none"
             >
               Sign in
             </Link>
             <Link
-              href="/register"
+              to="/signup"
               className="text-[#EFEDE7] bg-[#02C173] hover:bg-[#15d98bfd] focus:ring-4 rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none"
             >
               Sign up
@@ -132,13 +117,13 @@ function Home() {
             </p>
             <div className="flex text-[#EFEDE7] font-Heavitas justify-center py-4">
               <Link
-                href="/login"
+                to="/signin"
                 className=" hover:ring-2 hover:ring-[#02C173] focus:bg-[#02C173] rounded-lg text-xs lg:text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none"
               >
                 Sign in
               </Link>
               <Link
-                href="/register"
+                to="/signup"
                 className="text-[#EFEDE7] bg-[#02C173] hover:bg-[#15d98bfd]  rounded-lg text-xs lg:text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none"
               >
                 Sign up for free
