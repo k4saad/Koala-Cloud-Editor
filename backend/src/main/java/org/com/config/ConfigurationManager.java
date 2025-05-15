@@ -57,6 +57,10 @@ public class ConfigurationManager {
         return properties.getProperty("postgres.password", "");
     }
 
+    public String getPostgresDatabase(){
+        return properties.getProperty("postgres.database");
+    }
+
     public String getMongoUrl() {
         return properties.getProperty("mongo.url", "mongodb://localhost:27017");
     }

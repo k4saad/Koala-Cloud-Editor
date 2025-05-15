@@ -29,7 +29,7 @@ export function Signup() {
 			setErrorMessage("")
 			setUser({ name : "", email : "", username : "", password : "" })
       setTimeout(() => {
-        navigate("/client")
+        navigate("/signin")
       }, 2000)
 		} catch (error) {
 			setSuccessMessage("")
@@ -57,7 +57,7 @@ export function Signup() {
           <p className="mt-2 text-center text-sm text-gray-400 ">
             Already have an account?{' '}
             <Link
-              to="/login"
+              to="/signin"
               className="font-TypewcondRegular font-semibold text-[#02C173] transition-all duration-200 hover:underline"
             >
               Sign In

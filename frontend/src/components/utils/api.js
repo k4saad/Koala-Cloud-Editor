@@ -1,7 +1,7 @@
 import axios from "axios";
 import {getToken} from './auth.js'
 const api = axios.create({
-    baseURL : import.meta.env.BACKEND_HTTP_URL
+    baseURL : "http://localhost:8080"
 });
 
 api.interceptors.request.use((config) =>{
@@ -15,7 +15,7 @@ api.interceptors.request.use((config) =>{
 
 export const signup = async (user) => {
     try{
-        const response = await api.post("/register", user);
+        const response = await api.post("/auth/register", user);
         return response.data;
     }catch(error){
         if(error.response && error.response.data){
