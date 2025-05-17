@@ -23,50 +23,57 @@ public class ConfigurationManager {
                 .class.getClassLoader()
                 .getResourceAsStream("application.properties")
         ){
-            if(input == null){
-                logger.fatal("application.properties not found");
-                throw new IOException("application.properties not found");
+            if(input != null){
+                properties.load(input);
+                logger.info("application.properties loaded successfully");
             }
-            properties.load(input);
-            logger.info("application.properties loaded successfully");
+            else{
+                logger.warn("application.properties not found. Environment variables will be used.");
+            }
         }
         catch(IOException exception){
             logger.fatal("Failed to load application.properties", exception);
             throw new RuntimeException("Configuration loading failed",exception);
         }
     }
+
+    private String getProperty(String key) {
+        String envValue = System.getenv(key);
+        if (envValue != null && !envValue.isEmpty()) {
+            logger.info("Environment variable {} found, using its value", key);
+            return envValue;
+        }
+        return properties.getProperty(key);
+    }
+
     public static ConfigurationManager getInstance(){
         return CONFIGURATION_MANAGER;
     }
     public int getHttpPort(){
-        return Integer.parseInt(properties.getProperty("http.port"));
+        return Integer.parseInt(getProperty("http.port"));
     }
     public int getWebSocketPort() {
-        return Integer.parseInt(properties.getProperty("websocket.port", "8081"));
+        return Integer.parseInt(getProperty("websocket.port"));
     }
 
     public String getPostgresUrl() {
-        return properties.getProperty("postgres.url", "jdbc:postgresql://localhost:5432/replit");
+        return getProperty("postgres.url");
     }
 
     public String getPostgresUser() {
-        return properties.getProperty("postgres.user", "postgres");
+        return getProperty("postgres.user");
     }
 
     public String getPostgresPassword() {
-        return properties.getProperty("postgres.password", "");
-    }
-
-    public String getPostgresDatabase(){
-        return properties.getProperty("postgres.database");
+        return getProperty("postgres.password");
     }
 
     public String getMongoUrl() {
-        return properties.getProperty("mongo.url", "mongodb://localhost:27017");
+        return getProperty("mongo.url");
     }
 
     public String getJwtSecret() {
-        String secret = properties.getProperty("jwt.secret");
+        String secret = getProperty("jwt.secret");
         if (secret == null || secret.isEmpty()) {
             throw new IllegalStateException("JWT secret not configured");
         }
@@ -74,22 +81,22 @@ public class ConfigurationManager {
     }
 
     public String getDockerImage() {
-        return properties.getProperty("docker.image");
+        return getProperty("docker.image");
     }
 
     public int getHttpThreadPoolSize() {
-        return Integer.parseInt(properties.getProperty("thread.http.pool.size"));
+        return Integer.parseInt(getProperty("thread.http.pool.size"));
     }
 
     public int getWebSocketThreadPoolSize() {
-        return Integer.parseInt(properties.getProperty("thread.websocket.pool.size"));
+        return Integer.parseInt(getProperty("thread.websocket.pool.size"));
     }
 
     public int getDockerThreadPoolSize() {
-        return Integer.parseInt(properties.getProperty("thread.docker.pool.size"));
+        return Integer.parseInt(getProperty("thread.docker.pool.size"));
     }
 
     public String getLogFilePath() {
-        return properties.getProperty("log.file.path");
+        return getProperty("log.file.path");
     }
 }
