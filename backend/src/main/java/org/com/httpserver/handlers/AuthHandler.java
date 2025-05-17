@@ -66,12 +66,16 @@ public class AuthHandler implements HttpHandler {
             statement.setString(3, data.get("email"));
             statement.setString(4, PasswordUtil.hashPassword(data.get("password")));
 
+            logger.info("Executing query: " + statement);
+
             int rows = statement.executeUpdate();
 
             if(rows == 0){
+                logger.info("User: " + data.get("username") +" is already registered");
                 HandlerUtil.sendResponse(exchange,409,"User is already registered");
             }
             else{
+                logger.info("User: " + data.get("username") + " successfully registered");
                 HandlerUtil.sendResponse(exchange,200, "User registered successfully");
             }
 
