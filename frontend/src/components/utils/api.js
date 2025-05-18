@@ -1,7 +1,7 @@
 import axios from "axios";
 import {getToken} from './auth.js'
 const api = axios.create({
-    baseURL : import.meta.env.BACKEND_HTTP_URL
+    baseURL : import.meta.env.VITE_BACKEND_HTTP_URL
 });
 
 api.interceptors.request.use((config) =>{
