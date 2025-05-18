@@ -27,3 +27,18 @@ export const signup = async (user) => {
         }
     }
 };
+
+export const signin = async (user) => {
+    try{
+        const response = await api.post("/auth/login", user);
+        return response.data;
+    }catch(error){
+        if(error.response && error.response.data){
+            throw new Error(error.response.data);
+        }
+        else{
+            console.error("Sign in failed : ", error)
+            throw error;
+        }
+    }
+};
