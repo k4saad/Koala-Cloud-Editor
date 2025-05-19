@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.com.db.PostgresConnector;
 import org.com.util.HandlerUtil;
+import org.com.util.JWTUtil;
 import org.com.util.JsonUtil;
 import org.com.util.PasswordUtil;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -37,7 +39,45 @@ public class AuthHandler implements HttpHandler {
         if(path.endsWith("/register") && method.equalsIgnoreCase("POST")){
             handleRegister(exchange);
         }
+        if(path.endsWith("/login") && method.equalsIgnoreCase("POST")){
+            handleLogin(exchange);
+        }
 
+    }
+
+    /**
+     * This handler login user using postgres database
+     * @param exchange
+     * @throws IOException
+     */
+    private void handleLogin(HttpExchange exchange) throws IOException {
+        String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+        Map<String,String> data = JsonUtil.fromJson((requestBody), Map.class);
+        if(data == null){
+            HandlerUtil.sendResponse(exchange,400, "Request body missing");
+            return;
+        }
+        if(!(data.containsKey("usernameOrEmail") && data.containsKey("password"))){
+            HandlerUtil.sendResponse(exchange, 400,"Invalid parameters for user");
+            return;
+        }
+
+        try(Connection connection = PostgresConnector.getConnection();
+        PreparedStatement statement = connection.prepareStatement("SELECT username, password FROM users WHERE username=? or email=?")){
+            statement.setString(1,data.get("usernameOrEmail"));
+            statement.setString(2,data.get("usernameOrEmail"));
+            ResultSet resultSet = statement.executeQuery();
+            if(resultSet.next() && PasswordUtil.verifyPassword(data.get("password"), resultSet.getString("password")) ){
+                String JWTToken = JWTUtil.generateToken(resultSet.getString("username"));
+                HandlerUtil.sendResponse(exchange,200, JsonUtil.toJson(Map.of("token", JWTToken)));
+            }
+            else{
+                HandlerUtil.sendResponse(exchange, 401, "Invalid credentials");
+            }
+        } catch (SQLException e) {
+            logger.fatal("Login error: "+e.getMessage());
+            HandlerUtil.sendResponse(exchange,500,"Login failed: " + e.getMessage());
+        }
     }
 
     /**
@@ -52,10 +92,12 @@ public class AuthHandler implements HttpHandler {
 
         if(data == null){
             HandlerUtil.sendResponse(exchange,400,"Request body missing");
+            return;
         }
 
-        if(data != null && !(data.containsKey("username") && data.containsKey("name") && data.containsKey("email") && data.containsKey("password"))){
+        if(!(data.containsKey("username") && data.containsKey("name") && data.containsKey("email") && data.containsKey("password"))){
             HandlerUtil.sendResponse(exchange, 400,"Invalid parameters for user");
+            return;
         }
         try(Connection connection = PostgresConnector.getConnection();
             PreparedStatement statement =
