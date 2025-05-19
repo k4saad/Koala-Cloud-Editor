@@ -23,7 +23,7 @@ export function Signin() {
 		e.preventDefault()
 		try {
 			const response = await signin(user)
-			setSuccessMessage(response)
+			setSuccessMessage("Login Successfull")
 			setErrorMessage("")
 			setUser({ usernameOrEmail : "", password : "" })
       setTimeout(() => {
@@ -56,7 +56,7 @@ export function Signin() {
             Don&apos;t have an account?{' '}
             <Link
               to="/signup"
-              className="font-TypewcondRegular font-semibold text-[#02C173] transition-all duration-200 hover:underline"
+              className="font-semibold text-[#02C173] transition-all duration-200 hover:underline"
             >
               Create an account
             </Link>
@@ -87,6 +87,10 @@ export function Signin() {
                     {' '}
                     Password{' '}
                   </label>
+                  <Link className="text-sm focus:underline focus:font-semibold text-[#02C173] hover:underline"
+                    to="/forgot-password">{' '}
+                    Forgot password?{' '}
+                  </Link>
                 </div>
                 <div className="mt-2">
                   <input

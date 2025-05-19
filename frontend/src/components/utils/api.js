@@ -1,5 +1,7 @@
 import axios from "axios";
 import {getToken} from './auth.js'
+import {jwtDecode} from 'jwt-decode'
+
 const api = axios.create({
     baseURL : import.meta.env.VITE_BACKEND_HTTP_URL
 });
@@ -31,6 +33,10 @@ export const signup = async (user) => {
 export const signin = async (user) => {
     try{
         const response = await api.post("/auth/login", user);
+        const token = response.data.token
+        const decodedUser = jwtDecode(token)
+        localStorage.setItem("username", decodedUser.sub)
+        localStorage.setItem("jwtToken", token)
         return response.data;
     }catch(error){
         if(error.response && error.response.data){
