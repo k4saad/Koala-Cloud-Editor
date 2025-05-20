@@ -48,3 +48,15 @@ export const signin = async (user) => {
         }
     }
 };
+
+export const ping = async () => {
+    try {
+        const response = await api.get("/ping");
+        if(response.status == 204){
+            console.log("Backend is up and running");
+        }    
+        } catch (error) {
+            console.error("Backend server failed to start: ", error)
+            throw error;
+    }
+}

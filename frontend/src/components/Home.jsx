@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import koalaImage from "../assets/images/cool-koala.png";
 import { Link, NavLink } from "react-router-dom";
+import { ping } from "./utils/api";
 
 function Home() {
-  // TODO -- Make a request to backend for it to start. (like a ping)
   const [isOpen, setIsOpen] = useState(false);
   
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
+
+  useEffect(() => {
+    ping();
+  },[]);
   
   return (
     <>
