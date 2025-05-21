@@ -27,7 +27,7 @@ export function Signin() {
 			setErrorMessage("")
 			setUser({ usernameOrEmail : "", password : "" })
       setTimeout(() => {
-        navigate("/dashboard")
+        navigate("/~")
       }, 2000)
 		} catch (error) {
 			setSuccessMessage("")

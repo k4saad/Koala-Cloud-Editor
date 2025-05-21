@@ -1,5 +1,5 @@
 import axios from "axios";
-import {getToken} from './auth.js'
+import {getToken, setToken} from './auth.js'
 import {jwtDecode} from 'jwt-decode'
 
 const api = axios.create({
@@ -35,8 +35,7 @@ export const signin = async (user) => {
         const response = await api.post("/auth/login", user);
         const token = response.data.token
         const decodedUser = jwtDecode(token)
-        localStorage.setItem("username", decodedUser.sub)
-        localStorage.setItem("jwtToken", token)
+        setToken(token, decodedUser.sub);
         return response.data;
     }catch(error){
         if(error.response && error.response.data){
