@@ -42,7 +42,32 @@ public class AuthHandler implements HttpHandler {
         if(path.endsWith("/login") && method.equalsIgnoreCase("POST")){
             handleLogin(exchange);
         }
+        if(path.endsWith("/verifyJwtToken") && method.equalsIgnoreCase("GET")){
+            handleVerifyJwtToken(exchange);
+        }
 
+    }
+
+    /**
+     * This handler verify the validity of jwt token
+     * @param exchange
+     * @throws IOException
+     */
+    private void handleVerifyJwtToken(HttpExchange exchange) throws IOException {
+        logger.info("Jwt token verification request recevied");
+        String token = exchange.getRequestHeaders().getFirst("Authorization");
+        if (token == null || !token.startsWith("Bearer ")) {
+            logger.info("No Token found");
+            HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+            return;
+        }
+        if (JWTUtil.verifyToken(token)) {
+            logger.info("Valid Token: " + token);
+            exchange.sendResponseHeaders(204,-1);
+            return;
+        }
+        logger.info("Invalid Token: " + token);
+        HandlerUtil.sendResponse(exchange, 401, "Invalid Token");
     }
 
     /**
