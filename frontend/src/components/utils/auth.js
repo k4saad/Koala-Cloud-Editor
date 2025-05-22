@@ -4,8 +4,12 @@ export const setToken = (token, username) => {
 };
 
 export const getToken = () => {
-    return localStorage.getItem('token');
+    return localStorage.getItem('jwtToken');
 };
+
+export const getUsername = () =>{
+    return localStorage.getItem("username")
+}
 
 export const removeToken = () => {
     localStorage.removeItem("username")

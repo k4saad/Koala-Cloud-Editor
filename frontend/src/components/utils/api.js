@@ -59,3 +59,23 @@ export const ping = async () => {
             throw error;
     }
 }
+
+export const verifyJwtToken = async () => {
+    try {
+        const response = await api.get("/verifyJwtToken");
+        if(response.status == 204){
+            return true;
+        }
+        return false;
+    } catch (error) {
+        if(error.response && error.response.data){
+            console.log(error.response.data);
+            return false
+        }
+        else{
+            console.error("Jwt verification failed : ", error)
+            console.log(error);
+            return false
+        }
+    }
+}
