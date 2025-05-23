@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import koalaImage from "../../assets/images/cool-koala.png";
 import { signup } from '../utils/api';
+import LoadingScreen from '../common/LoadingScreen';
 
 export function Signup() {
 
@@ -16,6 +17,8 @@ export function Signup() {
 
   const [errorMessage, setErrorMessage] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  
 
   const handleInputChange = (e) => {
 		setUser({ ...user, [e.target.name]: e.target.value })
@@ -23,17 +26,18 @@ export function Signup() {
 
   const handleSubmit = async (e) => {
 		e.preventDefault()
+    setIsLoading(true);
 		try {
 			const response = await signup(user)
 			setSuccessMessage(response)
 			setErrorMessage("")
 			setUser({ name : "", email : "", username : "", password : "" })
-      setTimeout(() => {
-        navigate("/signin")
-      }, 2000)
+      navigate("/signin")
+      setIsLoading(false)
 		} catch (error) {
-			setSuccessMessage("")
+      setSuccessMessage("")
 			setErrorMessage(`Registration error : ${error.message}`)
+      setIsLoading(false)
 		}		
 	}
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import koalaImage from "../../assets/images/cool-koala.png";
 import { signin } from '../utils/api';
+import LoadingScreen from '../common/LoadingScreen';
 
 export function Signin() {
 
@@ -14,6 +15,7 @@ export function Signin() {
 
   const [errorMessage, setErrorMessage] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (e) => {
 		setUser({ ...user, [e.target.name]: e.target.value })
@@ -21,22 +23,27 @@ export function Signin() {
 
   const handleSubmit = async (e) => {
 		e.preventDefault()
+    setIsLoading(true);
 		try {
 			const response = await signin(user)
 			setSuccessMessage("Login Successfull")
 			setErrorMessage("")
 			setUser({ usernameOrEmail : "", password : "" })
-      setTimeout(() => {
-        navigate("/~")
-      }, 2000)
+      navigate("/~")
+      setIsLoading(false)
 		} catch (error) {
+      setIsLoading(false)
 			setSuccessMessage("")
 			setErrorMessage(`Sign in error : ${error.message}`)
 		}		
 	}
 
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <section className="top-0 h-screen pt-5 relative overflow-x-hidden bg-[#060707]">
+      <section className="top-0 h-screen pt-5 relative overflow-x-hidden bg-[#060707]">
         <>
             <div className="bg-[#15d98bfd] h-[181px] w-[181px] lg:h-[362px] lg:w-[362px] absolute rounded-full blur-[60px] lg:blur-[120px] filter -top-[100px]  -left-20 opacity-75"></div>
         </>
