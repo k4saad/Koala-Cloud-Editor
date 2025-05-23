@@ -1,5 +1,5 @@
 import axios from "axios";
-import {getToken, setToken} from './auth.js'
+import {getToken, removeToken, setToken} from './auth.js'
 import {jwtDecode} from 'jwt-decode'
 
 const api = axios.create({
@@ -60,14 +60,19 @@ export const ping = async () => {
     }
 }
 
-export const verifyJwtToken = async () => {
+export const verifyJwtToken  = async () => {
+    if(getToken() == null){
+        return false;
+    }
     try {
-        const response = await api.get("/verifyJwtToken");
+        const response = await api.get("/auth/verifyJwtToken");
         if(response.status == 204){
             return true;
         }
+        removeToken();
         return false;
     } catch (error) {
+        removeToken();
         if(error.response && error.response.data){
             console.log(error.response.data);
             return false

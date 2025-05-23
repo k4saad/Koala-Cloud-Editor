@@ -42,12 +42,16 @@ export function Signin() {
         </>
         <div className="my-10 xl:mx-auto xl:w-full xl:max-w-sm 2xl:max-w-md mx-auto w-full md:max-w-sm max-w-xs">
         <div className="mb-2 flex justify-center">
+            <Link
+            to="/"
+            >
             <img
                 src={koalaImage}
                 alt="kool koala"
                 width="100"
                 height="100"
             />
+            </Link>
         </div>
           <h2 className="text-center text-2xl text-[#EFEDE7] font-Heavitas leading-tight ">
           Sign in to your account

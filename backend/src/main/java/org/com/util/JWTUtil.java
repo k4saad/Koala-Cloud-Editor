@@ -104,19 +104,19 @@ public class JWTUtil {
     }
 
     public static boolean verifyToken(String token, String username) {
-        final String JWTuserName = extractUserName(token);
-        return (JWTuserName.equals(username) && !isTokenExpired(token));
+        final String JWTUserName = extractUserName(token);
+        return (JWTUserName.equals(username) && !isTokenExpired(token));
     }
 
     public static boolean verifyToken(String token) {
         return (!isTokenExpired(token));
     }
 
-    private static boolean isTokenExpired(String token) {
+    public static boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    private static Date extractExpiration(String token) {
+    public static Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 

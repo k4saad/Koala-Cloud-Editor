@@ -54,20 +54,28 @@ public class AuthHandler implements HttpHandler {
      * @throws IOException
      */
     private void handleVerifyJwtToken(HttpExchange exchange) throws IOException {
-        logger.info("Jwt token verification request recevied");
-        String token = exchange.getRequestHeaders().getFirst("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            logger.info("No Token found");
+        try {
+            logger.info("Jwt token verification request recevied");
+            String authorizationValue = exchange.getRequestHeaders().getFirst("Authorization");
+            String token = authorizationValue.substring(7);
+            logger.info("After expire function  : " + token);
+            if (token == null || !authorizationValue.startsWith("Bearer ")) {
+                logger.info("No Token found");
+                HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+                return;
+            }
+            if (JWTUtil.verifyToken(token)) {
+                logger.info("Valid Token: " + token);
+                exchange.sendResponseHeaders(204,-1);
+                return;
+            }
+            logger.info("Invalid Token: " + token);
+            HandlerUtil.sendResponse(exchange, 401, "Invalid Token");
+
+        }
+        catch (Exception e){
             HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
-            return;
         }
-        if (JWTUtil.verifyToken(token)) {
-            logger.info("Valid Token: " + token);
-            exchange.sendResponseHeaders(204,-1);
-            return;
-        }
-        logger.info("Invalid Token: " + token);
-        HandlerUtil.sendResponse(exchange, 401, "Invalid Token");
     }
 
     /**

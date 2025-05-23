@@ -21,7 +21,7 @@ function Home() {
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="mt-6 flex flex-1 flex-col justify-between">
+        <div className="mt-10 flex flex-1 flex-col justify-between">
           <nav className="-mx-3 space-y-6 ">
             <div className="space-y-3 ">
               <label className="px-3 text-sm  uppercase ">
