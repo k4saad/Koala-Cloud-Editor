@@ -1,5 +1,6 @@
 package org.com.util;
 
+import com.sun.net.httpserver.HttpExchange;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -120,4 +121,11 @@ public class JWTUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public static String getToken(HttpExchange exchange) {
+        String authorizationValue = exchange.getRequestHeaders().getFirst("Authorization");
+        if (!authorizationValue.startsWith("Bearer ")) {
+            return null;
+        }
+        return authorizationValue.substring(7);
+    }
 }

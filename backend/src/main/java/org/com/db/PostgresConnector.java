@@ -39,18 +39,27 @@ public class PostgresConnector {
     }
 
     private static void createTables() {
-        String createUserTableSql = """
+        String createTablesSql = """
             CREATE TABLE IF NOT EXISTS users (
-                username VARCHAR(50) PRIMARY KEY NOT NULL,
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
                 name VARCHAR(100) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS projects (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                owner_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+                CONSTRAINT unique_project_name_per_user UNIQUE (owner_id, name)
+            );
         """;
         try(Connection connection = getConnection();
         Statement statement = connection.createStatement()){
-            statement.executeUpdate(createUserTableSql);
-            logger.info("User table Created");
+            statement.executeUpdate(createTablesSql);
+            logger.info("Tables Created");
         } catch (SQLException e) {
             logger.fatal("Error: " + e.getMessage());
         }

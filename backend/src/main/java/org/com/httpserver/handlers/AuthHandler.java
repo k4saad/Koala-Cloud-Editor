@@ -45,6 +45,10 @@ public class AuthHandler implements HttpHandler {
         if(path.endsWith("/verifyJwtToken") && method.equalsIgnoreCase("GET")){
             handleVerifyJwtToken(exchange);
         }
+        else{
+            exchange.sendResponseHeaders(404,-1);
+            return;
+        }
 
     }
 
@@ -57,13 +61,12 @@ public class AuthHandler implements HttpHandler {
         try {
             logger.info("Jwt token verification request recevied");
             String authorizationValue = exchange.getRequestHeaders().getFirst("Authorization");
-            String token = authorizationValue.substring(7);
-            logger.info("After expire function  : " + token);
-            if (token == null || !authorizationValue.startsWith("Bearer ")) {
+            if (!authorizationValue.startsWith("Bearer ")) {
                 logger.info("No Token found");
                 HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
                 return;
             }
+            String token = authorizationValue.substring(7);
             if (JWTUtil.verifyToken(token)) {
                 logger.info("Valid Token: " + token);
                 exchange.sendResponseHeaders(204,-1);
@@ -74,6 +77,7 @@ public class AuthHandler implements HttpHandler {
 
         }
         catch (Exception e){
+            logger.error("Error: " + e.getMessage());
             HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
         }
     }
