@@ -8,6 +8,7 @@ import Signup from './components/authentication/Signup.jsx'
 import Signin from './components/authentication/Signin.jsx'
 import Mainpage from './components/dashboard/Mainpage.jsx'
 import ProtectedRoute from './components/utils/ProtectedRoutes.jsx'
+import Projects from './components/dashboard/Projects.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -16,6 +17,7 @@ const router = createBrowserRouter(
       <Route path='signup' element={<Signup/>}/>
       <Route path='signin' element={<Signin/>}/>
       <Route path='~' element={<ProtectedRoute> <Mainpage /> </ProtectedRoute>}/>
+      <Route path='projects' element={<ProtectedRoute> <Projects/> </ProtectedRoute>}/>
     </Route>
   )
 )

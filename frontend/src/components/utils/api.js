@@ -84,3 +84,29 @@ export const verifyJwtToken  = async () => {
         }
     }
 }
+
+export const getAllProjects = async () => {
+    try {
+        const response = await api.get("/projects")
+        return response.data
+    } catch (error) {
+        throw new Error(error.response.data)
+    }
+}
+
+export const addNewProject = async (projectName) => {
+    try{
+        const response = await api.post("/projects", {projectName : projectName})
+        if(response.status == 200){
+            return response.data
+        }
+        else{
+            console.error("Error creating new project")
+            throw new Error("No duplicate name")
+        }
+    }
+    catch(error){
+        console.error("Error creating new project")
+        throw new Error(error.response.data)
+    }
+}
