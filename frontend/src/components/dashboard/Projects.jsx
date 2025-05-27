@@ -5,7 +5,7 @@ import ProfileDropdown from "../common/ProfileDropdown";
 import ProjectCard from "../common/ProjectCard";
 import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
-import { addNewProject, getAllProjects } from "../utils/api";
+import { addNewProject, deleteProjectById, getAllProjects } from "../utils/api";
 
 const Projects = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,6 @@ const Projects = () => {
         }, 3000);
     }
   }
-
 
   useEffect(() => {
     fetchAllProjects();
@@ -75,7 +74,23 @@ const Projects = () => {
   const handleNotification = () => {
     setErrorMessage("")
     setSuccessMessage("")
-}
+  }
+
+  const deleteProject = async (id) => {
+  try{
+    await deleteProjectById(id);
+    setSuccessMessage("Project deleted successfully");
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+    fetchAllProjects();
+  } catch (error) {
+    setErrorMessage(error.message);
+    setTimeout(() => {
+      setErrorMessage("");
+    }, 3000);
+  }   
+  }
 
   return (
     <>
@@ -186,7 +201,7 @@ const Projects = () => {
           </div>
           ) : (
             projects.map((project) =>(
-                <ProjectCard  project={project} key={project.id} />
+                <ProjectCard  project={project} key={project.id} deleteProject={() => deleteProject(project.id)} />
             ))
           )}
         </div>

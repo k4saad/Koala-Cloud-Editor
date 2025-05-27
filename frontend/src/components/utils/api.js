@@ -110,3 +110,14 @@ export const addNewProject = async (projectName) => {
         throw new Error(error.response.data)
     }
 }
+
+export const deleteProjectById = async (id) => {
+    try {
+        const response = await api.delete(`/projects/${id}`)
+        if(response.status == 200)
+            return;
+        throw new Error("Error deleting project")    
+    } catch (error) {
+        throw new Error(error.response.data)
+    }
+}
