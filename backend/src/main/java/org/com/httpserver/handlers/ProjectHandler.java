@@ -43,10 +43,47 @@ public class ProjectHandler implements HttpHandler {
         if(method.equalsIgnoreCase("POST")){
             createProject(exchange);
         }
+        if(method.equalsIgnoreCase("DELETE")){
+            deleteProject(exchange);
+        }
         else{
             exchange.sendResponseHeaders(404,-1);
             return;
         }
+
+    }
+
+    private void deleteProject(HttpExchange exchange) throws IOException {
+        String token = JWTUtil.getToken(exchange);
+        if(token == null){
+            HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+            return;
+        }
+        try(Connection connection = PostgresConnector.getConnection();
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM projects WHERE id = ? AND owner_id = (SELECT id FROM users WHERE username = ?)");
+        ){
+            String path = exchange.getRequestURI().getPath();
+            Integer id = Integer.parseInt(path.substring(path.lastIndexOf("/")+1));
+
+            statement.setInt(1,id);
+            statement.setString(2,JWTUtil.extractUserName(token));
+
+            int rows = statement.executeUpdate();
+
+            if (rows == 0) {
+                HandlerUtil.sendResponse(exchange, 404, "Project not found");
+            } else {
+                HandlerUtil.sendResponse(exchange, 200, "Project deleted");
+            }
+
+        } catch (NumberFormatException e){
+           logger.error("Invalid url format");
+           HandlerUtil.sendResponse(exchange,400, "Error parsing project id");
+        } catch (SQLException e) {
+            logger.fatal("Project deletion error: " + e.getMessage());
+            HandlerUtil.sendResponse(exchange,500,"Project deletion error: " + e.getMessage());
+        }
+
 
     }
 
