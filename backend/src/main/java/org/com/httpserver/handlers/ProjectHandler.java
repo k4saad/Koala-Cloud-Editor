@@ -1,9 +1,16 @@
 package org.com.httpserver.handlers;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.com.db.MongoConnector;
 import org.com.db.PostgresConnector;
 import org.com.util.HandlerUtil;
 import org.com.util.JWTUtil;
@@ -16,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -32,23 +40,12 @@ public class ProjectHandler implements HttpHandler {
 
         String method = exchange.getRequestMethod();
 
-        if (method.equalsIgnoreCase("OPTIONS")){
-            logger.info("preflight request arrived");
-            exchange.sendResponseHeaders(204, -1);
-            return;
-        }
-        if(method.equalsIgnoreCase("GET")){
-            getAllProjects(exchange);
-        }
-        if(method.equalsIgnoreCase("POST")){
-            createProject(exchange);
-        }
-        if(method.equalsIgnoreCase("DELETE")){
-            deleteProject(exchange);
-        }
-        else{
-            exchange.sendResponseHeaders(404,-1);
-            return;
+        switch (method){
+            case "OPTIONS" -> exchange.sendResponseHeaders(204, -1);
+            case "GET" -> getAllProjects(exchange);
+            case "POST" -> createProject(exchange);
+            case "DELETE" -> deleteProject(exchange);
+            default -> exchange.sendResponseHeaders(404,-1);
         }
 
     }
@@ -73,6 +70,13 @@ public class ProjectHandler implements HttpHandler {
             if (rows == 0) {
                 HandlerUtil.sendResponse(exchange, 404, "Project not found");
             } else {
+
+                // Here I delete the project structure stored in mongoDB
+                MongoCollection<Document> collection = MongoConnector.getCollection();
+                Bson filter = Filters.eq("project_id", id);
+                DeleteResult deleteResult = collection.deleteOne(filter);
+                logger.info("Deleted projects: " + deleteResult.getDeletedCount());
+
                 HandlerUtil.sendResponse(exchange, 200, "Project deleted");
             }
 
@@ -132,9 +136,21 @@ public class ProjectHandler implements HttpHandler {
             statement.setString(2,JWTUtil.extractUserName(token));
             ResultSet resultSet = statement.executeQuery();
             if(resultSet.next()){
-                logger.info("Project created successfully");
                 int projectId = resultSet.getInt("id");
                 HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(Map.of("id", projectId)));
+
+                String empty_project = String.format("""
+                    {
+                        "project_id" : %d,
+                        "root" : []
+                    }
+                """, projectId);
+                // Here I will add default project structure in mongo db
+                MongoCollection<Document> collection = MongoConnector.getCollection();
+                InsertOneResult result = collection.insertOne(Document.parse(empty_project));
+                logger.info("Project created successfully");
+                logger.info("Added project structure to the mongoDB with id: {}", result.getInsertedId().asObjectId().getValue());
+
             }
             else{
                 logger.fatal("Project creation error");
