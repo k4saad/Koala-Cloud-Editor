@@ -142,7 +142,15 @@ public class ProjectHandler implements HttpHandler {
                 String empty_project = String.format("""
                     {
                         "project_id" : %d,
-                        "root" : []
+                        "root" : {
+                        "name" : "root",
+                        "children" : [],
+                        
+                        
+                        
+                        
+                        
+                        }
                     }
                 """, projectId);
                 // Here I will add default project structure in mongo db
