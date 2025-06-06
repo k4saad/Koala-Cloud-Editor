@@ -7,6 +7,8 @@ import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
 import { addNewProject, deleteProjectById, getAllProjects } from "../utils/api";
 
+// This page shows all the projects of a user
+
 const Projects = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [addProject, setAddProject] = useState(false);
