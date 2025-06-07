@@ -1,15 +1,17 @@
 import { ChevronRightIcon, FileCode2, FolderClosed, FolderOpen } from "lucide-react";
 import { useState } from "react";
 
-const Menu = ({node, onFileSelect, path = []}) => {
+const Menu = ({node, onFileSelect, onFolderSelect, path = []}) => {
   let [isOpen, setIsOpen] = useState(false);
 
   const handleFileClick = () => {
     if(!node.children){
-        onFileSelect([...path, node.name])
+        onFileSelect(path)
     }
     else{
+        onFolderSelect(path)
         setIsOpen(!isOpen)
+
     }
   }
 
@@ -58,7 +60,8 @@ const Menu = ({node, onFileSelect, path = []}) => {
                 node={node} 
                 key={node.name} 
                 onFileSelect={onFileSelect} 
-                path={node.children?.length > 0 ? [...path, node.name] : path}/>
+                onFolderSelect={onFolderSelect}
+                path={[...path, node.name]}/>
             ))}
             </ul>
         )}
