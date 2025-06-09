@@ -144,12 +144,7 @@ public class ProjectHandler implements HttpHandler {
                         "project_id" : %d,
                         "root" : {
                         "name" : "root",
-                        "children" : [],
-                        
-                        
-                        
-                        
-                        
+                        "children" : [],    
                         }
                     }
                 """, projectId);

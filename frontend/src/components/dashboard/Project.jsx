@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import Split from "react-split";
-import ProfileDropdown from "../common/ProfileDropdown";
 import { useNavigate, useParams } from "react-router-dom";
 import { Editor } from "@monaco-editor/react";
 import Menu from "../common/Menu";
 import { SkeletonProject } from "./SkeletonProject";
 import { pythonCompletions } from "../utils/pythonAutoCompletionList";
-import { FilePlus, FilePlus2, FolderPlus } from "lucide-react";
+import { FilePlus, FolderPlus } from "lucide-react";
+import ErrorNotification from "../common/ErrorNotification";
+import SuccessNotification from "../common/SuccessNotification";
 
 const Project = () => {
   const navigate = useNavigate();
@@ -19,12 +20,18 @@ const Project = () => {
   const [newFileName, setNewFileName] = useState("");
   const [addFolder, setAddFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
 
   const navigateToProjects = () => {
     navigate("/projects");
   };
+
+  const handleNotification = () => {
+    setErrorMessage("")
+    setSuccessMessage("")
+  }
 
   const handleEditorChange = (code) => {
     if(code !== undefined && selectedFilePath) {
@@ -255,6 +262,11 @@ const Project = () => {
             return prev;
           }
           if(i === selectedFolderPath.length - 1){
+            if(current.children.some(element => element.name === newFileName)){
+              setErrorMessage("File with same name exists");
+              setTimeout(() => setErrorMessage(""), 3000);
+              return prev;
+            }
             current.children = [...current.children,{name: newFileName, content: ""}]
           }
         }
@@ -288,6 +300,11 @@ const Project = () => {
             return prev;
           }
           if(i === selectedFolderPath.length - 1){
+            if(current.children.some(element => element.name === newFolderName)){
+              setErrorMessage("Directory with same name exists");
+              setTimeout(() => setErrorMessage(""), 3000);
+              return prev;
+            }
             current.children = [...current.children,{name: newFolderName, children: []}]
           }
         }
@@ -412,7 +429,7 @@ const Project = () => {
               />
             </svg>
           </button>
-          <ProfileDropdown />
+          
         </nav>
 
         {/* Main content with Split */}
@@ -420,6 +437,14 @@ const Project = () => {
           <>
             <div className="bg-[#15d98bfd] h-[181px] w-[181px] lg:h-[362px] lg:w-[362px] absolute rounded-full blur-[60px] lg:blur-[120px] filter -top-[100px]  -left-20 opacity-75"></div>
           </>
+          {successMessage && (
+              <SuccessNotification successMessage={successMessage}
+              handleNotification={handleNotification}/>
+          )}
+          {errorMessage && (
+              <ErrorNotification errorMessage={errorMessage}
+              handleNotification={handleNotification}/>
+          )}
           {isLoading ? (
             <SkeletonProject />
           ) : (
