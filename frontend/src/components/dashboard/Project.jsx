@@ -8,13 +8,16 @@ import { pythonCompletions } from "../utils/pythonAutoCompletionList";
 import { FilePlus, FolderPlus } from "lucide-react";
 import ErrorNotification from "../common/ErrorNotification";
 import SuccessNotification from "../common/SuccessNotification";
+import { getToken } from "../utils/auth";
+import useWebSocket, {ReadyState} from "react-use-websocket";
+import { getProjectById } from "../utils/api";
 
 const Project = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [projectStructure, setProjectStructure] = useState({});
   const [selectedFilePath, setSelectedFilePath] = useState();
-  const [selectedFolderPath, setSelectedFolderPath] = useState();
+  const [selectedFolderPath, setSelectedFolderPath] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addFile, setAddFile] = useState(false);
   const [newFileName, setNewFileName] = useState("");
@@ -22,6 +25,18 @@ const Project = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [localUpdate, setLocalUpdate] = useState(false);
+  const [focusedFile, setFocusedFile] = useState();
+  const [renameFileOrDir, setRenameFileOrDir] = useState(false);
+  const [renamePath, setRenamePath] = useState([]);
+  const [renameName, setRenameName] = useState("")
+
+  const {sendJsonMessage, lastJsonMessage, readyState, lastMessage} = useWebSocket(`${import.meta.env.VITE_BACKEND_WEBSOCKET_URL}`,{
+    shouldReconnect : () => true,
+    reconnectAttempts : 10,
+    reconnectInterval : 5000,
+    queryParams : {projectId : id, Authorization : `Bearer ${getToken()}`},
+  });
 
 
   const navigateToProjects = () => {
@@ -35,6 +50,7 @@ const Project = () => {
 
   const handleEditorChange = (code) => {
     if(code !== undefined && selectedFilePath) {
+      setLocalUpdate(true);
       setProjectStructure((prev) => {
         // i created a deep copy, because changes wasnt reflected
         const newStructure = JSON.parse(JSON.stringify(prev));
@@ -61,151 +77,7 @@ const Project = () => {
   const getProject = async () => {
     setIsLoading(true);
     try {
-      const data = {
-        project_id: 1,
-        root: {
-          name: "root",
-          children: [
-            {
-              name: "app",
-              children: [
-                { name: "__init__.py", content: "" },
-                {
-                  name: "core",
-                  children: [
-                    { name: "__init__.py", content: "" },
-                    {
-                      name: "config",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "settings.py",
-                          content: `# settings.py\n\nDB_NAME = "mydb"\nDEBUG = True`,
-                        },
-                      ],
-                    },
-                    {
-                      name: "empty_dir",
-                      children: [],
-                    },
-                    {
-                      name: "utils",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "logger.py",
-                          content: `# logger.py\n\nimport logging\nlogger = logging.getLogger("app")`,
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: "features",
-                  children: [
-                    { name: "__init__.py", content: "" },
-                    {
-                      name: "auth",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "controller",
-                          children: [
-                            { name: "__init__.py", content: "" },
-                            {
-                              name: "login_controller.py",
-                              content: `# login_controller.py\n\ndef login():\n    print("Logging in...")`,
-                            },
-                          ],
-                        },
-                        {
-                          name: "service",
-                          children: [
-                            { name: "__init__.py", content: "" },
-                            {
-                              name: "auth_service.py",
-                              content: `# auth_service.py\n\ndef validate_user(username, password):\n    return username == "admin"`,
-                            },
-                          ],
-                        },
-                        {
-                          name: "model",
-                          children: [
-                            { name: "__init__.py", content: "" },
-                            {
-                              name: "user.py",
-                              content: `# user.py\n\nclass User:\n    def __init__(self, username):\n        self.username = username`,
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      name: "calculator",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "operations",
-                          children: [
-                            { name: "__init__.py", content: "" },
-                            {
-                              name: "basic_ops.py",
-                              content: `# basic_ops.py\n\nclass Calculator:\n    def add(self, a, b): return a + b`,
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: "infrastructure",
-                  children: [
-                    { name: "__init__.py", content: "" },
-                    {
-                      name: "db",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "connection.py",
-                          content: `# connection.py\n\ndef connect():\n    print("Connecting to DB")`,
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: "main.py",
-                  content: `# main.py\n\nfrom app.core.utils.logger import logger\nlogger.info("App started")`,
-                },
-              ],
-            },
-            {
-              name: "tests",
-              children: [
-                { name: "__init__.py", content: "" },
-                {
-                  name: "features",
-                  children: [
-                    { name: "__init__.py", content: "" },
-                    {
-                      name: "auth",
-                      children: [
-                        { name: "__init__.py", content: "" },
-                        {
-                          name: "test_login.py",
-                          content: `# test_login.py\n\ndef test_login():\n    assert True`,
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      };
-
+      const data = await getProjectById(id);
       setProjectStructure(data);
       setIsLoading(false);
     } catch (error) {
@@ -216,6 +88,25 @@ const Project = () => {
   useEffect(() => {
     getProject();
   }, []);
+
+useEffect(() => {
+    if (lastJsonMessage !== null) {
+      try {
+        setProjectStructure(lastJsonMessage);
+      } catch (error) {
+        console.log("Error parsing WebSocket message:", error);
+        setErrorMessage("Invalid WebSocket message");
+        setTimeout(() => setErrorMessage(""), 3000);
+      }
+    }
+  }, [lastJsonMessage]);
+
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN && localUpdate) {
+      sendJsonMessage(projectStructure);
+      setLocalUpdate(false);
+    }
+  }, [projectStructure, sendJsonMessage, readyState]);
 
   const handleFileSelect = (path) => {
     setSelectedFilePath(path);
@@ -239,7 +130,6 @@ const Project = () => {
   };
 
   const addFileToggle = () => {
-    if(selectedFolderPath && selectedFolderPath.length > 0)
       setAddFile(!addFile)
   }
 
@@ -250,35 +140,43 @@ const Project = () => {
 
   const createFile = async (e) => {
     e.preventDefault();
-    if(selectedFolderPath.length > 0){
+      setLocalUpdate(true);
       setProjectStructure((prev) => {
         const newStructure = JSON.parse(JSON.stringify(prev))
         let current = newStructure.root;
-        for(let i = 0; i < selectedFolderPath.length; i++){
-          const segment = selectedFolderPath[i];
-          current = current.children.find((node) => node.name === segment);
-          if (!current) {
-            console.log("Path not found");
+        if(selectedFolderPath.length < 1){
+          if(current.children.some(element => element.name === newFileName)){
+            setErrorMessage("File with same name exists");
+            setTimeout(() => setErrorMessage(""), 3000);
             return prev;
           }
-          if(i === selectedFolderPath.length - 1){
-            if(current.children.some(element => element.name === newFileName)){
-              setErrorMessage("File with same name exists");
-              setTimeout(() => setErrorMessage(""), 3000);
+          current.children = [...current.children,{name: newFileName, content: ""}]
+        }
+        else{
+          for(let i = 0; i < selectedFolderPath.length; i++){
+            const segment = selectedFolderPath[i];
+            current = current.children.find((node) => node.name === segment);
+            if (!current) {
+              console.log("Path not found");
               return prev;
             }
-            current.children = [...current.children,{name: newFileName, content: ""}]
+            if(i === selectedFolderPath.length - 1){
+              if(current.children.some(element => element.name === newFileName)){
+                setErrorMessage("File with same name exists");
+                setTimeout(() => setErrorMessage(""), 3000);
+                return prev;
+              }
+              current.children = [...current.children,{name: newFileName, content: ""}]
+            }
           }
         }
         setNewFileName("");
         addFileToggle();   
         return newStructure;
       });
-    }
   }
 
   const addFolderToggle = () => {
-    if(selectedFolderPath && selectedFolderPath.length > 0)
       setAddFolder(!addFolder)
   }
 
@@ -288,38 +186,146 @@ const Project = () => {
 
   const createFolder = async (e) => {
     e.preventDefault();
-    if(selectedFolderPath.length > 0){
+      setLocalUpdate(true);
       setProjectStructure((prev) => {
         const newStructure = JSON.parse(JSON.stringify(prev))
         let current = newStructure.root;
-        for(let i = 0; i < selectedFolderPath.length; i++){
-          const segment = selectedFolderPath[i];
-          current = current.children.find((node) => node.name === segment);
-          if (!current) {
-            console.log("Path not found");
-            return prev;
-          }
-          if(i === selectedFolderPath.length - 1){
+          if(selectedFolderPath.length < 1){
             if(current.children.some(element => element.name === newFolderName)){
               setErrorMessage("Directory with same name exists");
               setTimeout(() => setErrorMessage(""), 3000);
               return prev;
             }
-            current.children = [...current.children,{name: newFolderName, children: []}]
+            current.children = [...current.children, {name: newFolderName, children: []}]
+          }
+          else{
+          for(let i = 0; i < selectedFolderPath.length; i++){
+            const segment = selectedFolderPath[i];
+            current = current.children.find((node) => node.name === segment);
+            if (!current) {
+              console.log("Path not found");
+              return prev;
+            }
+            if(i === selectedFolderPath.length - 1){
+              if(current.children.some(element => element.name === newFolderName)){
+                setErrorMessage("Directory with same name exists");
+                setTimeout(() => setErrorMessage(""), 3000);
+                return prev;
+              }
+              current.children = [...current.children,{name: newFolderName, children: []}]
+            }
           }
         }
         setNewFolderName("");
         addFolderToggle();   
         return newStructure;
       });
+  }
+  const deleteFileOrFolder = (path) => {
+    if(path.length > 0){
+      setLocalUpdate(true);
+      setProjectStructure((prev) => {
+        const newStructure = JSON.parse(JSON.stringify(prev))
+        let current = newStructure.root;
+        for(let i = 0; i < path.length - 1; i++){
+          const segment = path[i];
+          current = current.children.find((node) => node.name === segment);
+          if(!current){
+            console.log("Path not found");
+            return prev;
+          }
+        }
+        current.children = current.children.filter((node) => node.name !== path[path.length - 1])
+        return newStructure;
+      })
     }
-
   }
 
-  
+  const renameFileOrFolder = (path) => {
+    setRenamePath(path)
+    renameFileOrFolderToggle()
+  }
 
+  const handleRenameName = (e) => {
+    setRenameName(e.target.value)
+  }
+
+  const rename = (e) => {
+    e.preventDefault();
+    if(renamePath.length > 0){
+      setLocalUpdate(true);
+      setProjectStructure((prev) => {
+        const newStructure = JSON.parse(JSON.stringify(prev))
+        let current = newStructure.root;
+        for(let i = 0; i < renamePath.length; i++){
+          const segment = renamePath[i];
+          current = current.children.find((node) => node.name === segment);
+          if(!current){
+            console.log("Path not found");
+            return prev;
+          }
+        }
+        current.name = renameName;
+        setRenameName("");
+        setRenamePath([]);
+        renameFileOrFolderToggle()
+        return newStructure;
+      })
+    }
+    else{
+      renameFileOrFolderToggle()
+    }
+  }
+  const renameFileOrFolderToggle = () => {
+      setRenameFileOrDir(!renameFileOrDir);
+  }
   return (
     <>
+    {renameFileOrDir && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={renameFileOrFolderToggle}
+          ></div>
+          <div className="relative z-50 mx-auto w-full max-w-xs md:max-w-sm">
+            <form
+              onSubmit={rename}
+              className="rounded-lg bg-gray-900 p-6 shadow-lg"
+            >
+              <div className="space-y-5">
+                <div>
+                  <label
+                    htmlFor="renameName"
+                    className="text-base font-medium text-[#02C173]"
+                  >
+                    Rename /{selectedFolderPath.map(segment => segment + "/")}
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      className="flex h-10 w-full rounded-md border text-[#02C173] font-semibold border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#15d98bfd] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                      id="renameName"
+                      name="renameName"
+                      type="text"
+                      value={renameName}
+                      onChange={handleRenameName}
+                      placeholder="File Name"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <button
+                    type="submit"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-[#02C173] hover:bg-[#15d98bfd] px-3.5 py-2.5 font-semibold leading-7 text-[#EFEDE7]"
+                  >
+                    Rename
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {addFile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -337,7 +343,7 @@ const Project = () => {
                     htmlFor="newFileName"
                     className="text-base font-medium text-[#02C173]"
                   >
-                    Add file at {selectedFolderPath.map(segment => segment + "/")}
+                    Add file at /{selectedFolderPath.map(segment => segment + "/")}
                   </label>
                   <div className="mt-2">
                     <input
@@ -382,7 +388,7 @@ const Project = () => {
                     htmlFor="newFolderName"
                     className="text-base font-medium text-[#02C173]"
                   >
-                    Add directory at {selectedFolderPath.map(segment => segment + "/")}
+                    Add directory at /{selectedFolderPath.map(segment => segment + "/")}
                   </label>
                   <div className="mt-2">
                     <input
@@ -469,6 +475,10 @@ const Project = () => {
                   node={projectStructure.root}
                   onFileSelect={handleFileSelect}
                   onFolderSelect={handleFolderSelect}
+                  focusedFile={focusedFile}
+                  setFocusedFile={setFocusedFile}
+                  deleteFileOrFolder={deleteFileOrFolder}
+                  renameFileOrFolder={renameFileOrFolder}
                 />
               </div>
               <div className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05]">

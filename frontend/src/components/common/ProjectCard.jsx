@@ -8,7 +8,7 @@ const ProjectCard = ({project, deleteProject}) => {
         className="z-20 flex"
         >
             <Link 
-                to={`/project/${project.id}`}
+                to={`/projects/${project.id}`}
                 className="w-11/12 font-Heavitas text-left border-r border-solid border-gray-950 mb-1  ml-5 rounded-l-md  bg-gray-900 hover:bg-gray-700 focus:bg-gray-950 text-gray-400  px-3.5 py-4 font-semibold leading-7"
                 
             >

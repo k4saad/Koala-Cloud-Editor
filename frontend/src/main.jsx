@@ -19,7 +19,7 @@ const router = createBrowserRouter(
       <Route path='signin' element={<Signin/>}/>
       <Route path='~' element={<ProtectedRoute> <Mainpage /> </ProtectedRoute>}/>
       <Route path='projects' element={<ProtectedRoute> <Projects/> </ProtectedRoute>}/>
-      <Route path='project' element={<ProtectedRoute> <Project/> </ProtectedRoute>}/>
+      <Route path='projects/:id' element={<ProtectedRoute> <Project/> </ProtectedRoute>}/>
     </Route>
   )
 )

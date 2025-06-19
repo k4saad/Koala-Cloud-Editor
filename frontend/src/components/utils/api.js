@@ -121,3 +121,12 @@ export const deleteProjectById = async (id) => {
         throw new Error(error.response.data)
     }
 }
+
+export const getProjectById = async (id) => {
+    try {
+        const response = await api.get(`/projects/${id}`)
+        return response.data
+    } catch (error) {
+        throw new Error(error.response.data)
+    }
+}
