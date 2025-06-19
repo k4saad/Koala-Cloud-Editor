@@ -55,6 +55,11 @@ public class PostgresConnector {
                 FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
                 CONSTRAINT unique_project_name_per_user UNIQUE (owner_id, name)
             );
+            CREATE TABLE IF NOT EXISTS collaborators (
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                PRIMARY KEY (project_id, user_id)
+            );
         """;
         try(Connection connection = getConnection();
         Statement statement = connection.createStatement()){
@@ -63,6 +68,7 @@ public class PostgresConnector {
         } catch (SQLException e) {
             logger.fatal("Error: " + e.getMessage());
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(PostgresConnector::close));
     }
 
     public static void close(){

@@ -83,6 +83,12 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>4.11.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.java-websocket/Java-WebSocket -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.6.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

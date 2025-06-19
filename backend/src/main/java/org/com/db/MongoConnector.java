@@ -37,6 +37,7 @@ public class MongoConnector {
                 .getCollection("project_structure")
                 .createIndex(new Document("project_id",1),new IndexOptions().unique(true));
         logger.info("Connected to MongoDB");
+        Runtime.getRuntime().addShutdownHook(new Thread(MongoConnector::close));
     }
 
     public static MongoDatabase getDatabase(){

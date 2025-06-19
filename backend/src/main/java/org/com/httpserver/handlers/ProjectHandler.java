@@ -9,12 +9,12 @@ import com.sun.net.httpserver.HttpHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.com.db.MongoConnector;
 import org.com.db.PostgresConnector;
 import org.com.util.HandlerUtil;
 import org.com.util.JWTUtil;
 import org.com.util.JsonUtil;
+import org.com.util.ProjectUtil;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,7 +42,7 @@ public class ProjectHandler implements HttpHandler {
 
         switch (method){
             case "OPTIONS" -> exchange.sendResponseHeaders(204, -1);
-            case "GET" -> getAllProjects(exchange);
+            case "GET" -> getProjects(exchange);
             case "POST" -> createProject(exchange);
             case "DELETE" -> deleteProject(exchange);
             default -> exchange.sendResponseHeaders(404,-1);
@@ -52,7 +52,13 @@ public class ProjectHandler implements HttpHandler {
 
     private void deleteProject(HttpExchange exchange) throws IOException {
         String token = JWTUtil.getToken(exchange);
-        if(token == null){
+        try{
+            if (token == null || !JWTUtil.verifyToken(token)) {
+                HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+                return;
+            }
+        }catch (Exception exception){
+            logger.warn(exception.getMessage());
             HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
             return;
         }
@@ -73,8 +79,7 @@ public class ProjectHandler implements HttpHandler {
 
                 // Here I delete the project structure stored in mongoDB
                 MongoCollection<Document> collection = MongoConnector.getCollection();
-                Bson filter = Filters.eq("project_id", id);
-                DeleteResult deleteResult = collection.deleteOne(filter);
+                DeleteResult deleteResult = collection.deleteOne(Filters.eq("project_id", id));
                 logger.info("Deleted projects: " + deleteResult.getDeletedCount());
 
                 HandlerUtil.sendResponse(exchange, 200, "Project deleted");
@@ -90,34 +95,73 @@ public class ProjectHandler implements HttpHandler {
 
 
     }
-
-    private void getAllProjects(HttpExchange exchange) throws IOException {
+    private void getProjects(HttpExchange exchange) throws IOException {
 
         String token = JWTUtil.getToken(exchange);
-        if(token == null){
+        try{
+            if (token == null || !JWTUtil.verifyToken(token)) {
+                HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+                return;
+            }
+        }catch (Exception exception){
+            logger.warn(exception.getMessage());
             HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
             return;
         }
-        try(Connection connection = PostgresConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement("SELECT p.id, p.name, p.created_at FROM projects p JOIN users u ON p.owner_id = u.id WHERE u.username = ?");
-        ) {
-            statement.setString(1,JWTUtil.extractUserName(token));
-            ResultSet resultSet = statement.executeQuery();
-            List<Map<String,Object>> projects = new ArrayList<>();
-            while(resultSet.next()){
-                projects.add(Map.of("id", resultSet.getInt("id"), "name" , resultSet.getString("name"), "creationDate", resultSet.getTimestamp("created_at")));
+        String path = exchange.getRequestURI().getPath();
+        if (path.matches("/projects/\\d+")){
+            Integer id = Integer.parseInt(path.substring(path.lastIndexOf("/") + 1));
+            try {
+                if(ProjectUtil.hasProjectAccess(JWTUtil.extractUserName(token), id)){
+                    MongoCollection<Document> collection = MongoConnector.getCollection();
+                    Document document = collection
+                            .find(Filters.eq("project_id", id))
+                            .first();
+                    if(document == null){
+                        HandlerUtil.sendResponse(exchange, 500,"Project is empty");
+                    }
+                    else{
+                        HandlerUtil.sendResponse(exchange,200, document.toJson());
+                    }
+
+                }
+                else{
+                    HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+                    return;
+                }
+            } catch (Exception exception){
+                logger.warn("Project with id {}, fetching error: {}", id, exception.getMessage());
+                HandlerUtil.sendResponse(exchange, 500,"Project with id " + id + ", fetching error: " + exception.getMessage());
             }
-            HandlerUtil.sendResponse(exchange,200, JsonUtil.toJson(projects));
-        } catch (SQLException e) {
-            logger.fatal("Project fetching error: " + e.getMessage());
-            HandlerUtil.sendResponse(exchange,500,"Project fetching error: " + e.getMessage());
+        }
+        else{
+            try (Connection connection = PostgresConnector.getConnection();
+                 PreparedStatement statement = connection.prepareStatement("SELECT p.id, p.name, p.created_at FROM projects p JOIN users u ON p.owner_id = u.id WHERE u.username = ?");
+            ) {
+                statement.setString(1, JWTUtil.extractUserName(token));
+                ResultSet resultSet = statement.executeQuery();
+                List<Map<String, Object>> projects = new ArrayList<>();
+                while (resultSet.next()) {
+                    projects.add(Map.of("id", resultSet.getInt("id"), "name", resultSet.getString("name"), "creationDate", resultSet.getTimestamp("created_at")));
+                }
+                HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(projects));
+            } catch (SQLException e) {
+                logger.fatal("Project fetching error: " + e.getMessage());
+                HandlerUtil.sendResponse(exchange, 500, "Project fetching error: " + e.getMessage());
+            }
         }
     }
 
     private void createProject(HttpExchange exchange) throws IOException {
 
         String token = JWTUtil.getToken(exchange);
-        if(token == null){
+        try{
+            if (token == null || !JWTUtil.verifyToken(token)) {
+                HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
+                return;
+            }
+        }catch (Exception exception){
+            logger.warn(exception.getMessage());
             HandlerUtil.sendResponse(exchange, 401, "Unauthorized");
             return;
         }
@@ -137,15 +181,14 @@ public class ProjectHandler implements HttpHandler {
             ResultSet resultSet = statement.executeQuery();
             if(resultSet.next()){
                 int projectId = resultSet.getInt("id");
-                HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(Map.of("id", projectId)));
 
                 String empty_project = String.format("""
                     {
                         "project_id" : %d,
                         "root" : {
                         "name" : "root",
-                        "children" : [],    
-                        }
+                        "children" : [],
+                        },
                     }
                 """, projectId);
                 // Here I will add default project structure in mongo db
@@ -153,7 +196,7 @@ public class ProjectHandler implements HttpHandler {
                 InsertOneResult result = collection.insertOne(Document.parse(empty_project));
                 logger.info("Project created successfully");
                 logger.info("Added project structure to the mongoDB with id: {}", result.getInsertedId().asObjectId().getValue());
-
+                HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(Map.of("id", projectId)));
             }
             else{
                 logger.fatal("Project creation error");
