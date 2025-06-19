@@ -6,6 +6,7 @@ import ProjectCard from "../common/ProjectCard";
 import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
 import { addNewProject, deleteProjectById, getAllProjects } from "../utils/api";
+import { Turtle } from "lucide-react";
 
 // This page shows all the projects of a user
 
@@ -17,6 +18,7 @@ const Projects = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const toggleNav = () => {
     setIsOpen(!isOpen);
@@ -48,6 +50,7 @@ const Projects = () => {
 
   const createProject = async (e) => {
     e.preventDefault()
+    setIsButtonDisabled(true);
     try{
         const response = await addNewProject(newProjectName)
         setSuccessMessage("Project created")
@@ -66,6 +69,7 @@ const Projects = () => {
     finally{
         setNewProjectName("")
         addProjectToggle()
+        setIsButtonDisabled(false);
     }
   };
 
@@ -79,6 +83,7 @@ const Projects = () => {
   }
 
   const deleteProject = async (id) => {
+  setIsButtonDisabled(true);
   try{
     await deleteProjectById(id);
     setSuccessMessage("Project deleted successfully");
@@ -91,7 +96,9 @@ const Projects = () => {
     setTimeout(() => {
       setErrorMessage("");
     }, 3000);
-  }   
+  } finally {
+    setIsButtonDisabled(false);
+  }
   }
 
   return (
