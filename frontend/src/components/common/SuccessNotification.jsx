@@ -1,5 +1,3 @@
-import React from "react";
-
 const SuccessNotification = ({successMessage, handleNotification}) => {
     return (
         <div

@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import Sidebar from "../common/Sidebar";
 import ProfileDropdown from "../common/ProfileDropdown";
 import ProjectCard from "../common/ProjectCard";
 import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
 import { addNewProject, deleteProjectById, getAllProjects } from "../utils/api";
-import { Turtle } from "lucide-react";
 
 // This page shows all the projects of a user
 
@@ -138,6 +136,7 @@ const Projects = () => {
                 <div>
                   <button
                     type="submit"
+                    disabled={isButtonDisabled}
                     className="inline-flex w-full items-center justify-center rounded-md bg-[#02C173] hover:bg-[#15d98bfd] px-3.5 py-2.5 font-semibold leading-7 text-[#EFEDE7]"
                   >
                     Create Project

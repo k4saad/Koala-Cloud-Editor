@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import koalaImage from "../../assets/images/cool-koala.png";
 import Sidebar from "../common/Sidebar";
 import ProfileDropdown from "../common/ProfileDropdown"
 

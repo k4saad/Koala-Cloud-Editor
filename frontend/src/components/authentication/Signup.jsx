@@ -40,7 +40,9 @@ export function Signup() {
       setIsLoading(false)
 		}		
 	}
-
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
   return (
     <section className="top-0 h-screen pt-5 relative overflow-x-hidden bg-[#060707]">
         <>

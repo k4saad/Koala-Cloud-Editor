@@ -1,5 +1,3 @@
-import React from "react";
-
 const ErrorNotification = ({errorMessage,handleNotification}) => {
   return (
     <div

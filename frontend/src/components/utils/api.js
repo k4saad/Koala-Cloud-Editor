@@ -53,10 +53,13 @@ export const ping = async () => {
         const response = await api.get("/ping");
         if(response.status == 204){
             console.log("Backend is up and running");
-        }    
-        } catch (error) {
-            console.error("Backend server failed to start: ", error)
-            throw error;
+        }
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}`, {
+            method: 'GET',
+        });    
+    } catch (error) {
+        console.error("Backend server failed to start: ", error)
+        throw error;
     }
 }
 
@@ -127,6 +130,37 @@ export const getProjectById = async (id) => {
         const response = await api.get(`/projects/${id}`)
         return response.data
     } catch (error) {
+        throw new Error(error.response.data)
+    }
+}
+
+export const addCollaboratorApi = async (usernameOrEmail, projectId) => {
+    try {
+        const response = await api.post(`/collaborators`, {usernameOrEmail : usernameOrEmail, projectId : projectId})
+        if(response.status == 200){
+            return response.data
+        }
+        else{
+            console.error("Error adding collaborator")
+            throw new Error("No user found")
+        }
+    } catch (error) {
+        console.error("Error adding collaborator")
+        throw new Error(error.response.data)
+    }
+} 
+
+export const removeCollaboratorApi = async (username, projectId) => {
+    try{
+        const response = await api.delete(`/collaborators/${username}&${projectId}`)
+        if(response?.status === 200)
+            return response.data
+        else{
+            console.error("Error removing collaborator")
+            throw new Error("No user found")
+        }
+    } catch (error) {
+        console.error("Error removing collaborator")
         throw new Error(error.response.data)
     }
 }

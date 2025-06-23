@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import koalaImage from "../assets/images/cool-koala.png";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ping } from "./utils/api";
 
 function Home() {

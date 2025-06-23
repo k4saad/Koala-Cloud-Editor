@@ -5,12 +5,12 @@ import { Editor } from "@monaco-editor/react";
 import Menu from "../common/Menu";
 import { SkeletonProject } from "./SkeletonProject";
 import { pythonCompletions } from "../utils/pythonAutoCompletionList";
-import { FilePlus, FolderPlus } from "lucide-react";
+import { FilePlus, FolderPlus, Play, UserPlus, X } from "lucide-react";
 import ErrorNotification from "../common/ErrorNotification";
 import SuccessNotification from "../common/SuccessNotification";
 import { getToken } from "../utils/auth";
 import useWebSocket, {ReadyState} from "react-use-websocket";
-import { getProjectById } from "../utils/api";
+import { addCollaboratorApi, getProjectById, removeCollaboratorApi } from "../utils/api";
 
 const Project = () => {
   const navigate = useNavigate();
@@ -30,6 +30,10 @@ const Project = () => {
   const [renameFileOrDir, setRenameFileOrDir] = useState(false);
   const [renamePath, setRenamePath] = useState([]);
   const [renameName, setRenameName] = useState("")
+  const [collaboratorsWindow, setCollaboratorsWindow] = useState(false);
+  const [collaborator, setCollaborator] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [collaborators, setCollaborators] = useState(["saad123", "khan123", "heheh1123"])
 
   const {sendJsonMessage, lastJsonMessage, readyState, lastMessage} = useWebSocket(`${import.meta.env.VITE_BACKEND_WEBSOCKET_URL}`,{
     shouldReconnect : () => true,
@@ -279,9 +283,62 @@ useEffect(() => {
   const renameFileOrFolderToggle = () => {
       setRenameFileOrDir(!renameFileOrDir);
   }
+
+  const toggleCollaborators = () => {
+    setCollaboratorsWindow(!collaboratorsWindow)
+  }
+
+  const handleCollaboratorChange = (e) => {
+    setCollaborator(e.target.value)
+  }
+
+  const addCollaborator = async (e) => {
+    e.preventDefault();
+    setIsButtonDisabled(true);
+    try {
+      const response = await addCollaboratorApi(collaborator, id);
+      setSuccessMessage(`Added @${response.name}`)
+      setTimeout(() => {
+          setSuccessMessage("")
+      },3000);
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(error.message)
+      setTimeout(() => {
+          setErrorMessage("")
+      }, 3000);
+    } finally {
+      setCollaborator("");
+      toggleCollaborators();
+      setIsButtonDisabled(false);
+    }
+  }
+
+  const removeCollaborator = async (username) => {
+    setIsButtonDisabled(true);
+    try {
+      const response = await removeCollaboratorApi(username, id);
+      setTimeout(() => {
+        setSuccessMessage(`User @${response.name} removed`)
+      },3000);
+      setErrorMessage("")
+    } catch (error) {
+      setErrorMessage(error.message)
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 3000);
+    } finally{
+      setIsButtonDisabled(false)
+    }
+  }
+  
+  const runCode = () => {
+    return;
+  }
+
   return (
     <>
-    {renameFileOrDir && (
+      {renameFileOrDir && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="fixed inset-0 bg-black bg-opacity-50"
@@ -416,6 +473,63 @@ useEffect(() => {
           </div>
         </div>
       )}
+      {collaboratorsWindow && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50"
+          onClick={toggleCollaborators}
+        ></div>
+        <div className="relative z-50 mx-auto w-full max-w-xs md:max-w-lg">
+          <div
+            className="rounded-lg bg-gray-900 p-6 shadow-lg"
+          >
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
+                  Collaborator
+                </h2>
+              </div>
+                <form onSubmit={addCollaborator} className="flex flex-row gap-1">
+                  <input
+                    className="flex w-9/12 h-10 rounded-md border text-[#02C173] font-semibold border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#15d98bfd] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="collaborator"
+                    name="collaborator"
+                    type="text"
+                    value={collaborator}
+                    onChange={handleCollaboratorChange}
+                    placeholder="Add user by username or email"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={isButtonDisabled}
+                    className="inline-flex w-3/12 items-center justify-center rounded-md bg-[#02C173] hover:bg-[#15d98bfd] px-3.5 py-1 font-semibold leading-7 text-[#EFEDE7]"
+                  >
+                    Invite
+                  </button>
+                </form>
+               <div className="flex flex-col">
+                  {collaborators?.length > 0 ? (                    
+                    collaborators.map((username) => (
+                    <div key={username} className="text-white flex flex-row justify-between my-1.5">
+                      <div className="ml-1">
+                        @{username}
+                      </div>
+                        <div className="mr-1">
+                          <button onClick={() => removeCollaborator(username)}>
+                            <X strokeWidth={4}/>
+                          </button>
+                        </div>
+                    </div>
+                  ))
+                  )  : (<></>)
+                  }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
       <section className="top-0 relative bg-[#060707] min-h-screen flex flex-col">
         <nav className="z-40 relative flex justify-between items-center px-5 py-1 w-full">
           <button onClick={navigateToProjects}>
@@ -426,14 +540,26 @@ useEffect(() => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill="#9ca3af"
+                fill="#EFEDE7"
                 d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
               />
               <path
-                fill="#9ca3af"
+                fill="#EFEDE7"
                 d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
               />
             </svg>
+          </button>
+          <button
+            onClick={runCode}
+            className="inline-flex items-center justify-center rounded-md bg-[#02C173] hover:bg-[#15d98bfd] px-2.5 py-1 font-semibold leading-7 text-[#EFEDE7]"
+          >
+            <Play className="size-6 pr-1"/> Run
+          </button>
+          <button
+            onClick={toggleCollaborators}
+            className="inline-flex items-center justify-center rounded-md bg-gray-900 hover:bg-gray-700 px-2.5 py-1 font-semibold leading-7 text-[#EFEDE7]"
+          >
+            <UserPlus className="size-6 pr-1"/> Invite
           </button>
           
         </nav>
