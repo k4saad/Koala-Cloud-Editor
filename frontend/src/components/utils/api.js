@@ -100,7 +100,7 @@ export const getAllProjects = async () => {
 export const addNewProject = async (projectName) => {
     try{
         const response = await api.post("/projects", {projectName : projectName})
-        if(response.status == 200){
+        if(response.status == 201){
             return response.data
         }
         else{
@@ -137,7 +137,7 @@ export const getProjectById = async (id) => {
 export const addCollaboratorApi = async (usernameOrEmail, projectId) => {
     try {
         const response = await api.post(`/collaborators`, {usernameOrEmail : usernameOrEmail, projectId : projectId})
-        if(response.status == 200){
+        if(response.status == 201){
             return response.data
         }
         else{
@@ -152,15 +152,26 @@ export const addCollaboratorApi = async (usernameOrEmail, projectId) => {
 
 export const removeCollaboratorApi = async (username, projectId) => {
     try{
-        const response = await api.delete(`/collaborators/${username}&${projectId}`)
-        if(response?.status === 200)
+        const response = await api.delete(`/collaborators?${username}&${projectId}`)
+        if(response.status === 200){
+            console.log("response : " + response.data)
             return response.data
+        }
         else{
             console.error("Error removing collaborator")
             throw new Error("No user found")
         }
     } catch (error) {
         console.error("Error removing collaborator")
+        throw new Error(error.response.data)
+    }
+}
+
+export const getCollaboratorsByProjectIdApi = async (id) => {
+    try {
+        const response = await api.get(`/collaborators?${id}`)
+        return response.data;
+    } catch (error) {
         throw new Error(error.response.data)
     }
 }

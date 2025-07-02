@@ -10,7 +10,7 @@ import ErrorNotification from "../common/ErrorNotification";
 import SuccessNotification from "../common/SuccessNotification";
 import { getToken } from "../utils/auth";
 import useWebSocket, {ReadyState} from "react-use-websocket";
-import { addCollaboratorApi, getProjectById, removeCollaboratorApi } from "../utils/api";
+import { addCollaboratorApi, getCollaboratorsByProjectIdApi, getProjectById, removeCollaboratorApi } from "../utils/api";
 
 const Project = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const Project = () => {
   const [collaboratorsWindow, setCollaboratorsWindow] = useState(false);
   const [collaborator, setCollaborator] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [collaborators, setCollaborators] = useState(["saad123", "khan123", "heheh1123"])
+  const [collaborators, setCollaborators] = useState([])
 
   const {sendJsonMessage, lastJsonMessage, readyState, lastMessage} = useWebSocket(`${import.meta.env.VITE_BACKEND_WEBSOCKET_URL}`,{
     shouldReconnect : () => true,
@@ -91,6 +91,7 @@ const Project = () => {
 
   useEffect(() => {
     getProject();
+    getCollaboratorsByProjectId();
   }, []);
 
 useEffect(() => {
@@ -298,19 +299,15 @@ useEffect(() => {
     try {
       const response = await addCollaboratorApi(collaborator, id);
       setSuccessMessage(`Added @${response.name}`)
-      setTimeout(() => {
-          setSuccessMessage("")
-      },3000);
+      setTimeout(() => setSuccessMessage(""), 3000);
       setErrorMessage("")
     } catch (error) {
       setErrorMessage(error.message)
-      setTimeout(() => {
-          setErrorMessage("")
-      }, 3000);
+      setTimeout(() => setErrorMessage(""), 3000);
     } finally {
       setCollaborator("");
-      toggleCollaborators();
       setIsButtonDisabled(false);
+      getCollaboratorsByProjectId();
     }
   }
 
@@ -318,17 +315,27 @@ useEffect(() => {
     setIsButtonDisabled(true);
     try {
       const response = await removeCollaboratorApi(username, id);
-      setTimeout(() => {
-        setSuccessMessage(`User @${response.name} removed`)
-      },3000);
+      setSuccessMessage(`User @${response.name} removed`)
+      setTimeout(() => setSuccessMessage(""), 3000);
       setErrorMessage("")
     } catch (error) {
       setErrorMessage(error.message)
-      setTimeout(() => {
-        setErrorMessage("")
-      }, 3000);
+      console.log(error)
+      setTimeout(() => setErrorMessage(""), 3000);
     } finally{
       setIsButtonDisabled(false)
+      getCollaboratorsByProjectId();
+    }
+  }
+
+  const getCollaboratorsByProjectId = async () => {
+    try {
+      const data = await getCollaboratorsByProjectIdApi(id);
+      setCollaborators(data);
+    } catch (error) {
+      console.log(error.message)
+      setErrorMessage(errorMessage)
+      setTimeout(() => setErrorMessage(""), 3000)
     }
   }
   
@@ -510,13 +517,13 @@ useEffect(() => {
                 </form>
                <div className="flex flex-col">
                   {collaborators?.length > 0 ? (                    
-                    collaborators.map((username) => (
-                    <div key={username} className="text-white flex flex-row justify-between my-1.5">
+                    collaborators.map((collab) => (
+                    <div key={collab.username} className="text-white flex flex-row justify-between my-1.5">
                       <div className="ml-1">
-                        @{username}
+                        @{collab.username}
                       </div>
                         <div className="mr-1">
-                          <button onClick={() => removeCollaborator(username)}>
+                          <button onClick={() => removeCollaborator(collab.username)}>
                             <X strokeWidth={4}/>
                           </button>
                         </div>
