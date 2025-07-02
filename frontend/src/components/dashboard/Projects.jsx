@@ -4,7 +4,7 @@ import ProfileDropdown from "../common/ProfileDropdown";
 import ProjectCard from "../common/ProjectCard";
 import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
-import { addNewProject, deleteProjectById, getAllProjects } from "../utils/api";
+import { addNewProject, deleteProjectById, getAllProjects, getCollaborationsProjectsApi, getProjectById } from "../utils/api";
 
 // This page shows all the projects of a user
 
@@ -17,6 +17,7 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [collaborationsProjects, setCollaborationsProjects] = useState([]);
 
   const toggleNav = () => {
     setIsOpen(!isOpen);
@@ -40,6 +41,7 @@ const Projects = () => {
 
   useEffect(() => {
     fetchAllProjects();
+    fetchCollaborationProjects();
   }, []);
 
   const addProjectToggle = () => {
@@ -97,6 +99,22 @@ const Projects = () => {
   } finally {
     setIsButtonDisabled(false);
   }
+  }
+
+  const fetchCollaborationProjects = async () => {
+    setIsLoading(true);
+    try {
+        const data = await getCollaborationsProjectsApi();
+        setCollaborationsProjects(data);
+        setIsLoading(false);
+    } catch (error) {
+        console.log(error.message)
+        console.log(data)
+        setErrorMessage(error.message);
+        setTimeout(() => {
+            setErrorMessage("")
+        }, 3000);
+    }
   }
 
   return (
@@ -179,6 +197,9 @@ const Projects = () => {
         <>
           <div className="bg-[#15d98bfd] h-[181px] w-[181px] lg:h-[362px] lg:w-[362px] absolute rounded-full blur-[60px] lg:blur-[120px] filter -top-[100px]  -left-20 opacity-75"></div>
         </>
+        <>
+            <div className="bg-[#15d98bfd] h-[362px] w-[362px] absolute rounded-full blur-[120px] filter bottom-[100px] -right-20 opacity-75"></div>
+        </>
 
         {successMessage && (
             <SuccessNotification successMessage={successMessage}
@@ -209,6 +230,20 @@ const Projects = () => {
           </div>
           ) : (
             projects.map((project) =>(
+                <ProjectCard  project={project} key={project.id} deleteProject={() => deleteProject(project.id)} />
+            ))
+          )}
+          <div className=" flex flex-row mt-32 mb-10 justify-between relative flex-wrap px-5">
+            <div className="font-Heavitas text-white text-3xl z-30">
+              Collaborations Projects
+            </div>
+          </div>
+          {isLoading ? (
+            <div className="size-fit mx-auto transform translate-x-1/2 translate-y-1/2 ">
+            <div className="border-t-transparent border-solid animate-spin  rounded-full border-[#00634D] border-8 h-10 w-10"></div>
+          </div>
+          ) : (
+            collaborationsProjects.map((project) =>(
                 <ProjectCard  project={project} key={project.id} deleteProject={() => deleteProject(project.id)} />
             ))
           )}

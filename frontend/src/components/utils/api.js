@@ -175,3 +175,12 @@ export const getCollaboratorsByProjectIdApi = async (id) => {
         throw new Error(error.response.data)
     }
 }
+
+export const getCollaborationsProjectsApi = async () => {
+    try {
+        const response = await api.get("/projects/collaborators")
+        return response.data
+    } catch (error) {
+        throw new Error(error.response.data)
+    }
+}
