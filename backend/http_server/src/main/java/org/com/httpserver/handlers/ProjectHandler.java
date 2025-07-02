@@ -88,9 +88,9 @@ public class ProjectHandler implements HttpHandler {
         } catch (NumberFormatException e){
            logger.error("Invalid url format");
            HandlerUtil.sendResponse(exchange,400, "Error parsing project id");
-        } catch (SQLException e) {
-            logger.fatal("Project deletion error: " + e.getMessage());
-            HandlerUtil.sendResponse(exchange,500,"Project deletion error: " + e.getMessage());
+        } catch (SQLException exception) {
+            logger.fatal("Project deletion error: {}", exception.getMessage());
+            HandlerUtil.sendResponse(exchange,500,"Project deletion error: " + exception.getMessage());
         }
 
 
@@ -133,8 +133,22 @@ public class ProjectHandler implements HttpHandler {
                 logger.warn("Project with id {}, fetching error: {}", id, exception.getMessage());
                 HandlerUtil.sendResponse(exchange, 500,"Project with id " + id + ", fetching error: " + exception.getMessage());
             }
-        }
-        else{
+        } else if (path.matches("/projects/collaborators")){
+            try (Connection connection = PostgresConnector.getConnection();
+                PreparedStatement statement = connection.prepareStatement("SELECT p.id, p.name FROM projects p JOIN collaborators c ON c.project_id = p.id WHERE c.user_id = (SELECT u.id FROM users u WHERE u.username = ?)")
+            ) {
+                statement.setString(1, JWTUtil.extractUserName(token));
+                ResultSet resultSet = statement.executeQuery();
+                List<Map<String, Object>> projects = new ArrayList<>();
+                while (resultSet.next()) {
+                    projects.add(Map.of("id", resultSet.getInt("id"), "name", resultSet.getString("name")));
+                }
+                HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(projects));
+            } catch (SQLException exception) {
+                logger.fatal("Project fetching error: {}", exception.getMessage());
+                HandlerUtil.sendResponse(exchange, 500, "Project fetching error: " + exception.getMessage());
+            }
+        } else {
             try (Connection connection = PostgresConnector.getConnection();
                  PreparedStatement statement = connection.prepareStatement("SELECT p.id, p.name, p.created_at FROM projects p JOIN users u ON p.owner_id = u.id WHERE u.username = ?");
             ) {
@@ -145,9 +159,9 @@ public class ProjectHandler implements HttpHandler {
                     projects.add(Map.of("id", resultSet.getInt("id"), "name", resultSet.getString("name"), "creationDate", resultSet.getTimestamp("created_at")));
                 }
                 HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(projects));
-            } catch (SQLException e) {
-                logger.fatal("Project fetching error: " + e.getMessage());
-                HandlerUtil.sendResponse(exchange, 500, "Project fetching error: " + e.getMessage());
+            } catch (SQLException exception) {
+                logger.fatal("Project fetching error: {}", exception.getMessage());
+                HandlerUtil.sendResponse(exchange, 500, "Project fetching error: " + exception.getMessage());
             }
         }
     }
@@ -203,9 +217,9 @@ public class ProjectHandler implements HttpHandler {
                 HandlerUtil.sendResponse(exchange,500,"Project creation error");
             }
 
-        } catch (SQLException e) {
-            logger.fatal("Project creation error: " + e.getMessage());
-            HandlerUtil.sendResponse(exchange,500,"Project creation error: " + e.getMessage());
+        } catch (SQLException exception) {
+            logger.fatal("Project creation error: {}", exception.getMessage());
+            HandlerUtil.sendResponse(exchange,500,"Project creation error: " + exception.getMessage());
         }
     }
 }
