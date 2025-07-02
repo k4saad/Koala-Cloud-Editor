@@ -170,7 +170,7 @@ public class ProjectHandler implements HttpHandler {
         Map<String,String> data = JsonUtil.fromJson(requestBody,Map.class);
         if(data == null || !(data.containsKey("projectName"))){
             logger.error("Unauthorized access");
-            HandlerUtil.sendResponse(exchange, 400, "Project name not found");
+            HandlerUtil.sendResponse(exchange, 401, "Project name not found");
             return;
         }
         try(Connection connection = PostgresConnector.getConnection();
@@ -196,7 +196,7 @@ public class ProjectHandler implements HttpHandler {
                 InsertOneResult result = collection.insertOne(Document.parse(empty_project));
                 logger.info("Project created successfully");
                 logger.info("Added project structure to the mongoDB with id: {}", result.getInsertedId().asObjectId().getValue());
-                HandlerUtil.sendResponse(exchange, 200, JsonUtil.toJson(Map.of("id", projectId)));
+                HandlerUtil.sendResponse(exchange, 201, JsonUtil.toJson(Map.of("id", projectId)));
             }
             else{
                 logger.fatal("Project creation error");

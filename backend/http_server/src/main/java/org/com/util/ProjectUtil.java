@@ -31,4 +31,26 @@ public class ProjectUtil {
             return false;
         }
     }
+
+    public static boolean isOwner(String username, int projectId) {
+        try (Connection connection = PostgresConnector.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM projects p WHERE p.id = ? AND p.owner_id = (SELECT id FROM users WHERE username = ?)")
+        ){
+
+            statement.setInt(1,projectId);
+            statement.setString(2,username);
+
+            ResultSet result = statement.executeQuery();
+
+            if(result.next()){
+                logger.info(result);
+                return true;
+            }
+            return false;
+
+        } catch (SQLException e) {
+            logger.warn("Error : " + e.getMessage());
+            return false;
+        }
+    }
 }

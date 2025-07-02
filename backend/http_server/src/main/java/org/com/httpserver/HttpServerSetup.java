@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.com.config.ConfigurationManager;
 import org.com.httpserver.handlers.AuthHandler;
+import org.com.httpserver.handlers.CollaboratorsHandler;
 import org.com.httpserver.handlers.ProjectHandler;
 import org.com.util.HandlerUtil;
 import org.com.util.ThreadPoolManager;
@@ -55,9 +56,8 @@ public class HttpServerSetup {
         });
         httpServer.createContext("/auth", new AuthHandler());
         httpServer.createContext("/projects", new ProjectHandler());
-//        httpServer.createContext("/files", new FilesHandler());
+        httpServer.createContext("/collaborators", new CollaboratorsHandler());
 //        httpServer.createContext("/execute", new ExecuteHandler());
-//        httpServer.createContext("/collaborators", new CollaboratorsHandler());
 
         httpServer.start();
         logger.info("HTTP server started on port : "+ configuration.getPort());
