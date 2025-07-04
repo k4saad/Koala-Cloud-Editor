@@ -10,6 +10,7 @@ import Mainpage from './components/dashboard/Mainpage.jsx'
 import ProtectedRoute from './components/utils/ProtectedRoutes.jsx'
 import Projects from './components/dashboard/Projects.jsx'
 import Project from './components/dashboard/Project.jsx'
+import CollabProject from './components/dashboard/CollabProject.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -20,6 +21,7 @@ const router = createBrowserRouter(
       <Route path='~' element={<ProtectedRoute> <Mainpage /> </ProtectedRoute>}/>
       <Route path='projects' element={<ProtectedRoute> <Projects/> </ProtectedRoute>}/>
       <Route path='projects/:id' element={<ProtectedRoute> <Project/> </ProtectedRoute>}/>
+      <Route path='collaborations/projects/:id' element={<ProtectedRoute> <CollabProject/> </ProtectedRoute>}/>
     </Route>
   )
 )

@@ -5,6 +5,7 @@ import ProjectCard from "../common/ProjectCard";
 import SuccessNotification from "../common/SuccessNotification"
 import ErrorNotification from "../common/ErrorNotification"
 import { addNewProject, deleteProjectById, getAllProjects, getCollaborationsProjectsApi, getProjectById } from "../utils/api";
+import ProjectCardCollab from "../common/ProjectCardCollab";
 
 // This page shows all the projects of a user
 
@@ -244,7 +245,7 @@ const Projects = () => {
           </div>
           ) : (
             collaborationsProjects.map((project) =>(
-                <ProjectCard  project={project} key={project.id} deleteProject={() => deleteProject(project.id)} />
+                <ProjectCardCollab  project={project} key={project.id} />
             ))
           )}
         </div>
