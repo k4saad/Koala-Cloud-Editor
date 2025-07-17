@@ -35,29 +35,34 @@
 </div>
 
 ###
+
 **Koala Cloud Editor** is a full-stack cloud-based python editor that supports real-time project collaboration, user authentication, and seamless project management. It consists of a React-based frontend, a RESTful HTTP server backend, and a WebSocket server for live collaborative editing.
 
 ---
 
 ## 📁 Project Structure
+
 ```
 Koala-Cloud-Editor/
 ├── backend/
-│   ├── http_server/         
-│   └── websocket_server/    
-├── frontend/                
+│   ├── http_server/
+│   └── websocket_server/
+├── frontend/
 └── README.md
 ```
+
 ---
 
 ## 🌐 Frontend
 
 ### Built With:
+
 - React.js + Vite
 - Tailwind CSS
 - Axios
 
 ### Directory Highlights:
+
 - `authentication/` – Signin & Signup pages
 - `dashboard/` – Editor workspace, project list, etc.
 - `common/` – Sidebar, notifications, menu, etc.
@@ -70,6 +75,7 @@ cd frontend
 npm install
 npm run dev
 ```
+
 ---
 
 ## 🧠 Backend
@@ -78,9 +84,9 @@ npm run dev
 
 Handles:
 
-* Authentication (JWT)
-* Project Management (Create, Fetch, Delete)
-* MongoDB / PostgreSQL connectivity
+- Authentication (JWT)
+- Project Management (Create, Fetch, Delete)
+- MongoDB / PostgreSQL connectivity
 
 #### Run Locally:
 
@@ -98,8 +104,8 @@ java -cp target/*.jar org.com.Main
 
 Supports:
 
-* Real-time project collaboration
-* JWT verification and project room sync
+- Real-time project collaboration
+- JWT verification and project room sync
 
 #### Run Locally:
 
@@ -137,8 +143,8 @@ docker run -p 8080:8080 koala-ws-server
 
 Each backend contains a sample configuration file:
 
-* `backend/http_server/src/main/resources/sample.application.properties`
-* `backend/websocket_server/src/main/resources/sample.application.properties`
+- `backend/http_server/src/main/resources/sample.application.properties`
+- `backend/websocket_server/src/main/resources/sample.application.properties`
 
 Update these files to connect to your database and set JWT secrets.
 
@@ -146,11 +152,11 @@ Update these files to connect to your database and set JWT secrets.
 
 ## ✅ Features
 
-* 🔐 Secure authentication with JWT
-* 📁 Project CRUD API
-* 💬 Live collaborative editing via WebSocket
-* ⚡ Optimized frontend with Vite + Tailwind
-* 🔒 Protected frontend routes
+- 🔐 Secure authentication with JWT
+- 📁 Project CRUD API
+- 💬 Live collaborative editing via WebSocket
+- ⚡ Optimized frontend with Vite + Tailwind
+- 🔒 Protected frontend routes
 
 ---
 
@@ -164,3 +170,5 @@ GitHub: [@k4saad](https://github.com/k4saad)
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+<!-- Hello this is test connection -->
